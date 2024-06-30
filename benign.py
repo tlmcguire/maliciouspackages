@@ -11,20 +11,24 @@ def get_top_pypi_packages(url='https://hugovk.github.io/top-pypi-packages/top-py
     response.raise_for_status() 
     
     data = response.json()
-    packages = [package['project'] for package in data['rows'][:1000]]
+    packages = [package['project'] for package in data['rows'][:1250]]
 
     return packages
 
 top_packages = get_top_pypi_packages()
 print(top_packages)
 
+
 def dl_packages(packages, target_directory):
     count = 0
+    failed_packages = []
+    
     for package in packages:
         package_dir = os.path.join(target_directory, package)
         os.makedirs(package_dir, exist_ok=True)
         retries = 2
         delay = 1
+        
         while retries > 0:
             try:
                 r = requests.get(f"https://pypi.org/pypi/{package}/json").content
@@ -41,18 +45,21 @@ def dl_packages(packages, target_directory):
                         count += 1
                         print(f"Progress: {count}/{len(packages)}")
                         break
-
                 break  # Break out of the retry loop if download is successful
             except Exception as e:
                 print(f"Failed to download {package}: {e}")
                 retries -= 1
                 if retries == 0:
                     print(f"Max retries reached for {package}. Skipping.")
+                    failed_packages.append(package)
                 else:
                     print(f"Retrying in {delay} seconds...")
                     time.sleep(delay)
                     delay *= 2  # Exponential backoff
-                    continue
+
+    print(f"\nDownload complete. {count} packages downloaded successfully.")
+    if failed_packages:
+        print(f"{len(failed_packages)} packages failed to download: {failed_packages}")
 
 download_directory = '/mnt/volume_nyc1_01/benignPyPI/'
 
