@@ -11,19 +11,20 @@ def get_top_pypi_packages(url='https://hugovk.github.io/top-pypi-packages/top-py
     response.raise_for_status() 
     
     data = response.json()
-    packages = [package['project'] for package in data['rows'][:1250]]
+    packages = [package['project'] for package in data['rows'][:1100]]
 
     return packages
 
 top_packages = get_top_pypi_packages()
 print(top_packages)
 
-
 def dl_packages(packages, target_directory):
     count = 0
     failed_packages = []
     
-    for package in packages:
+    total_packages = len(packages)
+    
+    for index, package in enumerate(packages, start=1):
         package_dir = os.path.join(target_directory, package)
         os.makedirs(package_dir, exist_ok=True)
         retries = 2
@@ -43,7 +44,6 @@ def dl_packages(packages, target_directory):
                             file.write(response.content)
                         print(f"Downloaded {package} into {package_dir}/{file_name}")
                         count += 1
-                        print(f"Progress: {count}/{len(packages)}")
                         break
                 break  # Break out of the retry loop if download is successful
             except Exception as e:
@@ -56,13 +56,16 @@ def dl_packages(packages, target_directory):
                     print(f"Retrying in {delay} seconds...")
                     time.sleep(delay)
                     delay *= 2  # Exponential backoff
-
+        
+        # Print progress
+        print(f"Progress: {index}/{total_packages} packages processed")
+    
     print(f"\nDownload complete. {count} packages downloaded successfully.")
     if failed_packages:
         print(f"{len(failed_packages)} packages failed to download: {failed_packages}")
 
+# Example usage
 download_directory = '/mnt/volume_nyc1_01/benignPyPI/'
-
 dl_packages(top_packages, download_directory)
 
 repo_dir = "/mnt/volume_nyc1_01/benignPyPI/"
