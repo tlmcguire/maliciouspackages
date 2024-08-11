@@ -27,10 +27,10 @@ Prepare the Dataset:
 Ensure you have the CSV file named merged.csv in the root directory of the repository. This file should contain the features and labels extracted from the malicious and benign packages.
 
 Setup test:
-Run each cell in rfTest.ipynb.
 If you want to exclude specific columns from the dataset, modify the columns_to_exclude list in the script.
+The test split and ratio of malicious packages in the test are also adjustable.
 
-Run the Script
+Run each cell in rfTest.ipynb.
 
 ### Acknowledgments
 - **Backstabbers' Knife Collection**: [https://dasfreak.github.io/Backstabbers-Knife-Collection/] for providing labeled malicious Python packages.
@@ -38,5 +38,5 @@ Run the Script
 - **pandas**: For data manipulation and analysis.
 - **Matplotlib**: For data visualization.
 - **SciPy**: For scientific computing capabilities.
-- **lxml**: For efficient XML and HTML processing.
+- **lxml**: For XML processing.
 - **NumPy**: For numerical computing and array manipulation.
