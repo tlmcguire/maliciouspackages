@@ -33,8 +33,10 @@ If you want to exclude specific columns from the dataset, modify the columns_to_
 Run the Script
 
 ### Acknowledgments
-
-    Backstabbers Knife Collection (https://dasfreak.github.io/Backstabbers-Knife-Collection/) for labled malcious Python packages.
-    Scikit-learn for machine learning functionalities.
-    pandas for data manipulation and analysis.
-    Matplotlib for data visualization.
+- **Backstabbers' Knife Collection**: [https://dasfreak.github.io/Backstabbers-Knife-Collection/] for providing labeled malicious Python packages.
+- **Scikit-learn**: For machine learning functionalities that support model training and evaluation.
+- **pandas**: For data manipulation and analysis.
+- **Matplotlib**: For data visualization.
+- **SciPy**: For scientific computing capabilities.
+- **lxml**: For efficient XML and HTML processing.
+- **NumPy**: For numerical computing and array manipulation.
