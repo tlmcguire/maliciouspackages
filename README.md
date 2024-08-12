@@ -4,13 +4,6 @@
 
 This repository contains Python scripts to preprocess data and train machine learning models to classify Python packages as malcious/benign. Included are scripts to process a dataset of Python packages, train classification models, and evaluate their performance using various metrics. 
 
-Features
-
-    Data preprocessing to handle malicious and benign Python packages.
-    Classification model training (using Random Forest).
-    Evaluation metrics including accuracy, classification report, and confusion matrix.
-    Visualization of model performance with ROC curve.
-
 ### Requirements
 
 To run these scripts, you will need the following Python packages:
