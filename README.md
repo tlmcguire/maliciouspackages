@@ -7,12 +7,13 @@ This repository contains Python scripts to preprocess data and train machine lea
 ### Requirements
 
 To run these scripts, you will need the following Python packages:
-    scipy
-    numpy
-    pandas
-    scikit-learn
-    matplotlib
-    lxml
+
+- `scipy`
+- `numpy`
+- `pandas`
+- `scikit-learn`
+- `matplotlib`
+- `lxml`
 
 Additionally, the Backstabber's Knife Collection (https://dasfreak.github.io/Backstabbers-Knife-Collection/) is required.
 
