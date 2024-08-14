@@ -15,7 +15,9 @@ To run these scripts, you will need the following Python packages:
 - `matplotlib`
 - `lxml`
 
-Additionally, the Backstabber's Knife Collection is required. You can find it [here](https://dasfreak.github.io/Backstabbers-Knife-Collection/).
+The Backstabber's Knife Collection dataset of labeled malicous Python packages is required. You can find it [here](https://dasfreak.github.io/Backstabbers-Knife-Collection/).
+The benign packages dataset was built from the top 1500 most downloaded PyPI packaages (assumed to be benign due to their popularity). topPyPINames.txt contains the names of the packages used to construct the benign dataset, which can be used with benignBuilder.py to build the benign dataset.
+
 
 ### Instructions
 
