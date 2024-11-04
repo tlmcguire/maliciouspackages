@@ -78,10 +78,10 @@ def parse_imports(directory):
                         # Collect imports
                         for node in ast.walk(tree):
                             if isinstance(node, ast.Import):
-                                all_imports.extend(alias.name for alias in node.names)
+                                imports.extend(alias.name for alias in node.names)
                             elif isinstance(node, ast.ImportFrom):
                                 if node.module:  # Check if module is not None
-                                    all_imports.append(node.module)
+                                    imports.append(node.module)
                     except SyntaxError as e:
                         print(f"Syntax error in {file_path}: {e}")
     
