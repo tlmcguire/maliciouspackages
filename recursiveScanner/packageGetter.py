@@ -67,7 +67,7 @@ def dl_packages(packages, target_directory):
         print(f"{len(failed_packages)} packages failed to download: {failed_packages}")
 
 def parse_imports(directory):
-    all_imports = []  # List to collect all imports
+    imports = []
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.endswith(".py"):
@@ -85,7 +85,7 @@ def parse_imports(directory):
                     except SyntaxError as e:
                         print(f"Syntax error in {file_path}: {e}")
     
-    return all_imports  # Return the list of all imports
+    return imports  # Return the list of all imports
 
 download_directory = './packages/'
 dl_packages(test_packages, download_directory)
