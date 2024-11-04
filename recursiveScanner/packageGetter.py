@@ -3,6 +3,7 @@ import os
 import tarfile
 import time
 import json
+import ast
 
 test_packages = ['ospyata']
 print(test_packages)
@@ -65,6 +66,27 @@ def dl_packages(packages, target_directory):
     if failed_packages:
         print(f"{len(failed_packages)} packages failed to download: {failed_packages}")
 
+def parse_imports(directory):
+    all_imports = []  # List to collect all imports
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".py"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r') as f:
+                    try:
+                        tree = ast.parse(f.read(), filename=file_path)
+                        # Collect imports
+                        for node in ast.walk(tree):
+                            if isinstance(node, ast.Import):
+                                all_imports.extend(alias.name for alias in node.names)
+                            elif isinstance(node, ast.ImportFrom):
+                                if node.module:  # Check if module is not None
+                                    all_imports.append(node.module)
+                    except SyntaxError as e:
+                        print(f"Syntax error in {file_path}: {e}")
+    
+    return all_imports  # Return the list of all imports
+
 download_directory = './packages/'
 dl_packages(test_packages, download_directory)
 
@@ -91,6 +113,7 @@ for tar_file in tar_files:
             extract_dir = os.path.splitext(os.path.splitext(tar_file)[0])[0]
             tar_ref.extractall(extract_dir)
             print(f"Extracted {tar_file} to {extract_dir}")
+            print(parse_imports(extract_dir))
         
         # Remove the tar file after extraction
         # os.remove(tar_file)
