@@ -15,7 +15,6 @@ builtin_modules.update(sys.builtin_module_names)
 downloaded_packages = set()
 
 def is_package_on_pypi(package_name):
-    """Check if a package exists on PyPI."""
     try:
         response = requests.get(f"https://pypi.org/pypi/{package_name}/json")
         return response.status_code == 200
