@@ -4,14 +4,27 @@ import tarfile
 import time
 import json
 import ast
+import sys
+import pkgutil
 
-test_packages = ['ospyata']
-print(test_packages)
+# Set of built-in modules in Python
+builtin_modules = {name for _, name, is_pkg in pkgutil.iter_modules() if not is_pkg}
+builtin_modules.update(sys.builtin_module_names)
+
+# Track downloaded packages to avoid duplicate work
+downloaded_packages = set()
+
+def is_package_on_pypi(package_name):
+    """Check if a package exists on PyPI."""
+    try:
+        response = requests.get(f"https://pypi.org/pypi/{package_name}/json")
+        return response.status_code == 200
+    except requests.exceptions.RequestException:
+        return False
 
 def dl_packages(packages, target_directory):
     successful_downloads = 0
     failed_packages = []
-    
     total_packages = len(packages)
     
     for index, package in enumerate(packages, start=1):
@@ -59,7 +72,7 @@ def dl_packages(packages, target_directory):
                 print(f"Max retries reached for {package}. Skipping.")
                 failed_packages.append(package)
         
-        # Print progress
+        downloaded_packages.add(package)  # Mark as processed
         print(f"Progress: {index}/{total_packages} packages processed")
     
     print(f"\nDownload complete. {successful_downloads} packages downloaded successfully.")
@@ -67,58 +80,78 @@ def dl_packages(packages, target_directory):
         print(f"{len(failed_packages)} packages failed to download: {failed_packages}")
 
 def parse_imports(directory):
-    imports = []
+    imports = set()
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.endswith(".py"):
                 file_path = os.path.join(root, file)
-                with open(file_path, 'r') as f:
-                    try:
-                        tree = ast.parse(f.read(), filename=file_path)
-                        # Collect imports
-                        for node in ast.walk(tree):
-                            if isinstance(node, ast.Import):
-                                imports.extend(alias.name for alias in node.names)
-                            elif isinstance(node, ast.ImportFrom):
-                                if node.module:  # Check if module is not None
-                                    imports.append(node.module)
-                    except SyntaxError as e:
-                        print(f"Syntax error in {file_path}: {e}")
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        try:
+                            tree = ast.parse(f.read(), filename=file_path)
+                            for node in ast.walk(tree):
+                                if isinstance(node, ast.Import):
+                                    imports.update(alias.name for alias in node.names)
+                                elif isinstance(node, ast.ImportFrom):
+                                    if node.module:
+                                        imports.add(node.module)
+                        except (SyntaxError, UnicodeDecodeError) as e:
+                            print(f"Error parsing {file_path}: {e}")
+                except (UnicodeDecodeError, FileNotFoundError) as e:
+                    print(f"Skipping {file_path} due to encoding issues or file not found: {e}")
+    return imports
+
+def download_and_parse_recursively(packages, target_directory, current_depth=0, max_depth=3):
+    """Recursively download and parse packages with a depth limit."""
+    if not packages or current_depth > max_depth:
+        return
     
-    return imports  # Return the list of all imports
-
-download_directory = './packages/'
-dl_packages(test_packages, download_directory)
-
-# Find all tar.gz files in the repository
-tar_files = []
-for root, dirs, files in os.walk(download_directory):
-    for file in files:
-        if file.endswith(".tar.gz") or file.endswith(".tar.bz2") or file.endswith(".tar.xz"):
-            tar_files.append(os.path.join(root, file))
-
-# Unzip the files with different compression methods
-for tar_file in tar_files:
-    if tar_file.endswith(".tar.gz"):
-        mode = 'r:gz'
-    elif tar_file.endswith(".tar.bz2"):
-        mode = 'r:bz2'
-    elif tar_file.endswith(".tar.xz"):
-        mode = 'r:xz'
-    else:
-        mode = 'r'
-    
-    try:
-        with tarfile.open(tar_file, mode) as tar_ref:
-            extract_dir = os.path.splitext(os.path.splitext(tar_file)[0])[0]
-            tar_ref.extractall(extract_dir)
-            print(f"Extracted {tar_file} to {extract_dir}")
-            print(parse_imports(extract_dir))
+    for package in packages:
+        if package in downloaded_packages or package in builtin_modules:
+            continue  # Skip already downloaded or built-in modules
         
-        # Remove the tar file after extraction
-        # os.remove(tar_file)
-        # print(f"Deleted {tar_file}")
-    except (tarfile.ReadError, tarfile.CompressionError) as e:
-        print(f"Failed to extract {tar_file}: {e}")
+        if not is_package_on_pypi(package):
+            print(f"Package {package} not found on PyPI. Skipping.")
+            downloaded_packages.add(package)
+            continue
+        
+        dl_packages([package], target_directory)
+        package_dir = os.path.join(target_directory, package)
+        
+        # Find all tar.gz files in the package directory and extract them
+        tar_files = []
+        for root, dirs, files in os.walk(package_dir):
+            for file in files:
+                if file.endswith((".tar.gz", ".tar.bz2", ".tar.xz")):
+                    tar_files.append(os.path.join(root, file))
 
-print("Extraction process completed.")
+        for tar_file in tar_files:
+            try:
+                if tar_file.endswith(".tar.gz"):
+                    mode = 'r:gz'
+                elif tar_file.endswith(".tar.bz2"):
+                    mode = 'r:bz2'
+                elif tar_file.endswith(".tar.xz"):
+                    mode = 'r:xz'
+                else:
+                    mode = 'r'
+                
+                with tarfile.open(tar_file, mode) as tar_ref:
+                    extract_dir = os.path.splitext(os.path.splitext(tar_file)[0])[0]
+                    tar_ref.extractall(extract_dir)
+                    print(f"Extracted {tar_file} to {extract_dir}")
+                    
+                    new_imports = parse_imports(extract_dir)
+                    print(f"Imports found in {package}: {new_imports}")
+                    
+                    # Recursively parse new imports with increased depth
+                    download_and_parse_recursively(new_imports - downloaded_packages, target_directory, current_depth + 1, max_depth)
+            except (tarfile.ReadError, tarfile.CompressionError) as e:
+                print(f"Failed to extract {tar_file}: {e}")
+
+# Initial call
+test_packages = ['ospyata']
+download_directory = './packages/'
+download_and_parse_recursively(test_packages, download_directory, max_depth=3)
+
+print("Recursive download and parsing process completed.")
