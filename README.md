@@ -33,10 +33,10 @@ The benign packages dataset was built from the top 1500 most downloaded PyPI pac
 
 ### Recursive Scan Usage
 
-1. **Specify Packages**
+1. **Specify Packages**:
    Specify package to analyze by modifying the 'test_packages' list in `packageGetter.py`. It is recommended to analyze one package at a time.
 
-2. **Extract Features and Classify**
+2. **Extract Features and Classify**:
    Run each cell in `extract.ipynb`. This will extract features from the packages downloaded to `/packages/` and classify them as either benign or malicious (0 = benign, 1 = malicious).
 
 ### Acknowledgments
