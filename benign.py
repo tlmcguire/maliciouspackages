@@ -4,7 +4,7 @@ import tarfile
 import time
 import json
 
-# def get_top_pypi_packages(url='https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days.json'):
+# def get_top_pypi_packages(url='https://hugovk.github.io/top-pypi-packages/top-pypi-packages.json'):
 #     response = requests.get(url)
 #     response.raise_for_status()
     
